@@ -1,0 +1,241 @@
+<html>
+<head>
+<title>ElectionResults.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+ElectionResults.java</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">org.w3c.dom.DOMStringList</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">java.io.FileInputStream</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.io.IOException</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.*</span><span class="s0">;</span>
+
+
+<span class="s2">/* 
+ Author: Divesh 
+ Date:10/7/23 
+ 
+ REFLECTION ANSWERS: 
+ 1.The biggest obstacle was creating the second method and I had to use the zybook 
+ 2. I learned that the biggest part of software devleopment is that testing the code multiple times is a good idea 
+ 3.I like the RCV process. 
+ 
+ */</span>
+<span class="s0">public class </span><span class="s1">ElectionResults {</span>
+
+    <span class="s2">// the main method works as follows:</span>
+    <span class="s2">// - provided code (leave this code as is):</span>
+    <span class="s2">//   - prompts user for file name containing ballot data</span>
+    <span class="s2">//   - reads data into array (one array item per line in file)</span>
+    <span class="s2">//   - runs any testing code that you have written</span>
+    <span class="s0">boolean </span><span class="s1">continueProcessing = </span><span class="s0">true;</span>
+    <span class="s0">while </span><span class="s1">(continueProcessing) {</span>
+        <span class="s1">HashMap&lt;String</span><span class="s0">, </span><span class="s1">Integer&gt; tally = tallies(Ballot)</span><span class="s0">;</span>
+
+        <span class="s1">Result result = analyze(tally)</span><span class="s0">;</span>
+        <span class="s0">if</span><span class="s1">(result.isWinner()) {</span>
+            <span class="s1">System.out.println(</span><span class="s3">&quot;Winner: &quot; </span><span class="s1">+ result.getName())</span><span class="s0">;</span>
+            <span class="s1">printPercentages(tally)</span><span class="s0">;</span>
+
+            <span class="s0">break;</span>
+        <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+            <span class="s1">System.out.println(</span><span class="s3">&quot;Remove &quot; </span><span class="s1">+ result.getName())</span><span class="s0">;</span>
+            <span class="s1">remove(result.getName()</span><span class="s0">, </span><span class="s1">(convert(getFileContents()))</span><span class="s0">;</span>
+        <span class="s1">}</span>
+        <span class="s0">break;</span>
+    <span class="s1">}</span>
+
+    <span class="s1">}</span>
+    <span class="s0">public static void </span><span class="s1">main(String[] args) {</span>
+        <span class="s2">// Establish console Scanner for console input</span>
+        <span class="s1">Scanner console = </span><span class="s0">new </span><span class="s1">Scanner(System.in)</span><span class="s0">;</span>
+
+        <span class="s2">// Determine the file name containing the ballot data</span>
+        <span class="s1">System.out.print(</span><span class="s3">&quot;Ballots file: &quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">String fileName = console.nextLine()</span><span class="s0">;</span>
+
+        <span class="s2">// Read the file contents into an array.  Each array</span>
+        <span class="s2">// entry corresponds to a line in the file.</span>
+        <span class="s1">String[] fileContents = getFileContents(fileName)</span><span class="s0">;</span>
+        <span class="s1">System.out.print(Arrays.toString(fileContents))</span><span class="s0">;</span>
+        <span class="s2">// ***********************************************</span>
+        <span class="s2">// Your code below here: execute the RCV process,</span>
+        <span class="s2">// ensuring to make use of the remaining methods</span>
+        <span class="s2">// ***********************************************</span>
+        <span class="s1">ArrayList&lt;Ballot&gt; arr = convert(fileContents)</span><span class="s0">;</span>
+        <span class="s1">System.out.println(arr.toString())</span><span class="s0">;</span>
+        <span class="s1">System.out.println(tallies(arr))</span><span class="s0">;</span>
+        <span class="s1">System.out.println(countTotalVotes(tallies(arr)))</span><span class="s0">;</span>
+        <span class="s1">System.out.println(analyze(tallies(arr)))</span><span class="s0">;</span>
+        <span class="s1">printCounts(tallies(arr))</span><span class="s0">;</span>
+        <span class="s1">remove(</span><span class="s3">&quot;Bob&quot;</span><span class="s0">, </span><span class="s1">arr)</span><span class="s0">;</span>
+        <span class="s1">System.out.println(arr)</span><span class="s0">;</span>
+      <span class="s1">printPercentages(tallies(arr))</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s0">public static </span><span class="s1">ArrayList&lt;Ballot&gt; convert(String[] fileContents) {</span>
+        <span class="s1">ArrayList&lt;Ballot&gt; ballotArrayList = </span><span class="s0">new </span><span class="s1">ArrayList&lt;&gt;()</span><span class="s0">;</span>
+        <span class="s0">for</span><span class="s1">(String s: fileContents){</span>
+            <span class="s1">String [] Ballots = s.split(</span><span class="s3">&quot;,&quot;</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">Ballot candidate = </span><span class="s0">new </span><span class="s1">Ballot()</span><span class="s0">;</span>
+            <span class="s0">for </span><span class="s1">(String a: Ballots){</span>
+                <span class="s1">candidate.addCandidate(a)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+             <span class="s1">ballotArrayList.add(candidate)</span><span class="s0">;</span>
+
+
+
+        <span class="s1">}</span>
+
+
+
+
+
+
+
+
+
+
+
+        <span class="s0">return </span><span class="s1">ballotArrayList</span><span class="s0">;</span>
+
+    <span class="s1">}</span>
+
+
+
+
+
+
+
+
+
+    <span class="s0">public static </span><span class="s1">HashMap&lt;String</span><span class="s0">, </span><span class="s1">Integer&gt; tallies(ArrayList&lt;Ballot&gt; ballots){</span>
+        <span class="s1">HashMap&lt;String</span><span class="s0">, </span><span class="s1">Integer&gt; tally = </span><span class="s0">new </span><span class="s1">HashMap&lt;&gt;()</span><span class="s0">;</span>
+        <span class="s0">for </span><span class="s1">(Ballot ballot : ballots) {</span>
+            <span class="s1">String currentChoice = ballot.getCurrentChoice()</span><span class="s0">;</span>
+                    <span class="s0">if </span><span class="s1">(!currentChoice.isEmpty()){</span>
+                        <span class="s1">tally.put(currentChoice</span><span class="s0">, </span><span class="s1">tally.getOrDefault(currentChoice</span><span class="s0">,</span><span class="s4">0</span><span class="s1">) + </span><span class="s4">1</span><span class="s1">)</span><span class="s0">;</span>
+                    <span class="s1">}</span>
+        <span class="s1">}</span>
+            <span class="s0">return </span><span class="s1">tally</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">public static int </span><span class="s1">countTotalVotes(HashMap&lt;String</span><span class="s0">, </span><span class="s1">Integer&gt; votesCandidates){</span>
+        <span class="s0">int </span><span class="s1">totalVotes = </span><span class="s4">0</span><span class="s0">;</span>
+        <span class="s0">for </span><span class="s1">(</span><span class="s0">int </span><span class="s1">votes : votesCandidates.values()) {</span>
+            <span class="s1">totalVotes += votes</span><span class="s0">;</span>
+        <span class="s1">}</span>
+        <span class="s0">return </span><span class="s1">totalVotes</span><span class="s0">;</span>
+
+    <span class="s1">}</span>
+    <span class="s0">public static </span><span class="s1">Result analyze(HashMap&lt;String</span><span class="s0">, </span><span class="s1">Integer&gt; votesCandidates){</span>
+        <span class="s0">int </span><span class="s1">totalVotes = countTotalVotes(votesCandidates)</span><span class="s0">;</span>
+
+        <span class="s0">for </span><span class="s1">(Map.Entry&lt;String</span><span class="s0">, </span><span class="s1">Integer&gt; entry: votesCandidates.entrySet()) {</span>
+            <span class="s0">if </span><span class="s1">(entry.getValue() &gt; totalVotes / </span><span class="s4">2</span><span class="s1">){</span>
+                <span class="s0">return new </span><span class="s1">Result(entry.getKey()</span><span class="s0">,true</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">}</span>
+
+        <span class="s1">String loser = </span><span class="s0">null;</span>
+        <span class="s0">int </span><span class="s1">minVotes = Integer.MAX_VALUE</span><span class="s0">;</span>
+
+        <span class="s0">for </span><span class="s1">(Map.Entry&lt;String</span><span class="s0">, </span><span class="s1">Integer&gt; entry : votesCandidates.entrySet()) {</span>
+            <span class="s0">if </span><span class="s1">(entry.getValue() &lt; minVotes) {</span>
+                <span class="s1">minVotes = entry.getValue()</span><span class="s0">;</span>
+                <span class="s1">loser = entry.getKey()</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">}</span>
+
+        <span class="s0">return new </span><span class="s1">Result(loser</span><span class="s0">, false</span><span class="s1">)</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s0">public static void </span><span class="s1">printCounts(HashMap&lt;String</span><span class="s0">, </span><span class="s1">Integer&gt; votes){</span>
+        <span class="s1">System.out.println(</span><span class="s3">&quot;Vote Tallies&quot;</span><span class="s1">)</span><span class="s0">;</span>
+
+        <span class="s0">for </span><span class="s1">(Map.Entry&lt;String</span><span class="s0">,</span><span class="s1">Integer&gt; entry: votes.entrySet()) {</span>
+            <span class="s1">System.out.println(entry.getKey() + </span><span class="s3">&quot;:&quot; </span><span class="s1">+ entry.getValue())</span><span class="s0">;</span>
+
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+
+    <span class="s0">public static void </span><span class="s1">remove(String candidateName</span><span class="s0">, </span><span class="s1">ArrayList&lt;Ballot&gt; ballots){</span>
+        <span class="s2">//Iterator &lt;Ballot&gt; iterator = ballots.iterator();</span>
+        <span class="s0">int </span><span class="s1">i = </span><span class="s4">0</span><span class="s0">;</span>
+        <span class="s0">while </span><span class="s1">(i &lt; ballots.size()) {</span>
+            <span class="s1">System.out.println(ballots.get(i).removeCandidate(candidateName))</span><span class="s0">;</span>
+            <span class="s1">i++</span><span class="s0">;</span>
+        <span class="s1">}</span>
+        <span class="s1">i = ballots.size()-</span><span class="s4">1</span><span class="s0">;</span>
+        <span class="s0">while</span><span class="s1">(i &gt; </span><span class="s4">0</span><span class="s1">) {</span>
+            <span class="s0">if</span><span class="s1">(ballots.get(i).isExhausted()){</span>
+                <span class="s1">ballots.remove(i)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+            <span class="s1">i--</span><span class="s0">;</span>
+        <span class="s1">}</span>
+
+
+
+    <span class="s1">}</span>
+    <span class="s0">public static void </span><span class="s1">printPercentages(HashMap&lt;String</span><span class="s0">,</span><span class="s1">Integer&gt; votes){</span>
+     <span class="s0">int  </span><span class="s1">totalVotes = countTotalVotes(votes)</span><span class="s0">;</span>
+
+    <span class="s0">for</span><span class="s1">(String name: votes.keySet()){</span>
+        <span class="s0">double </span><span class="s1">percent = ((</span><span class="s0">double</span><span class="s1">)(votes.get(name))/ ((</span><span class="s0">double</span><span class="s1">)totalVotes)) * </span><span class="s4">100.0</span><span class="s0">;</span>
+        <span class="s1">System.out.printf((</span><span class="s3">&quot;%.1f&quot;</span><span class="s0">, </span><span class="s1">percent))</span><span class="s0">;</span>
+        <span class="s1">System.out.print(</span><span class="s3">&quot;% &quot; </span><span class="s1">+ name)</span><span class="s0">;</span>
+        <span class="s1">System.out.println()</span><span class="s0">;</span>
+        <span class="s1">}</span>
+
+    <span class="s1">}</span>
+    <span class="s2">// DO NOT edit the methods below. These are provided to help you get started.</span>
+    <span class="s0">public static </span><span class="s1">String[] getFileContents(String fileName) {</span>
+
+        <span class="s2">// first pass: determine number of lines in the file</span>
+        <span class="s1">Scanner file = getFileScanner(fileName)</span><span class="s0">;</span>
+        <span class="s0">int </span><span class="s1">numLines = </span><span class="s4">0</span><span class="s0">;</span>
+        <span class="s0">while </span><span class="s1">(file.hasNextLine()) {</span>
+            <span class="s1">file.nextLine()</span><span class="s0">;</span>
+            <span class="s1">numLines++</span><span class="s0">;</span>
+        <span class="s1">}</span>
+
+        <span class="s2">// create array to hold the number of lines counted</span>
+        <span class="s1">String[] contents = </span><span class="s0">new </span><span class="s1">String[numLines]</span><span class="s0">;</span>
+
+        <span class="s2">// second pass: read each line into array</span>
+        <span class="s1">file = getFileScanner(fileName)</span><span class="s0">;</span>
+        <span class="s0">for </span><span class="s1">(</span><span class="s0">int </span><span class="s1">i = </span><span class="s4">0</span><span class="s0">; </span><span class="s1">i &lt; numLines</span><span class="s0">; </span><span class="s1">i++) {</span>
+            <span class="s1">contents[i] = file.nextLine()</span><span class="s0">;</span>
+        <span class="s1">}</span>
+
+        <span class="s0">return </span><span class="s1">contents</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+
+    <span class="s0">public static </span><span class="s1">Scanner getFileScanner(String fileName) {</span>
+        <span class="s0">try </span><span class="s1">{</span>
+            <span class="s1">FileInputStream textFileStream = </span><span class="s0">new </span><span class="s1">FileInputStream(fileName)</span><span class="s0">;</span>
+            <span class="s1">Scanner inputFile = </span><span class="s0">new </span><span class="s1">Scanner(textFileStream)</span><span class="s0">;</span>
+            <span class="s0">return </span><span class="s1">inputFile</span><span class="s0">;</span>
+        <span class="s1">}</span>
+        <span class="s0">catch </span><span class="s1">(IOException ex) {</span>
+            <span class="s1">System.out.println(</span><span class="s3">&quot;Warning: could not open &quot; </span><span class="s1">+ fileName)</span><span class="s0">;</span>
+            <span class="s0">return null;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+</pre>
+</body>
+</html>
